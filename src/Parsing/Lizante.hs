@@ -2,9 +2,13 @@
 {-# LANGUAGE LambdaCase, RecordWildCards #-}
 
 module Parsing.Lizante (
-
+  RawParserOutput, ParserOutput(..),
+  Parser, parser,
+  (+), (-), (^),
+  zeroOrMore, oneOrMore
                        ) where
 
+import Prelude hiding ((+), (-), (^))
 import Data.Either
 
 import Parsing.Lizante.Utils
@@ -14,7 +18,7 @@ data ParserOutput = ParserOutput
   , post :: Tree String
   }
 
--- Input -> either <Error> <Output>
+-- Input -> either <Error> <Rest, Output>
 type RawParserOutput = Either String (ParserOutput)
 type Parser = String -> RawParserOutput
 
