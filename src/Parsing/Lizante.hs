@@ -1,43 +1,47 @@
 
-{-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE LambdaCase, RecordWildCards #-}
 
 module Parsing.Lizante (
 
                        ) where
 
+import Parsing.Lizante.Utils
 
-(|>) :: a -> (a -> b) -> b
-x |> f = f x
-
-type ParserOutput = Either String String
-
-data Parser a = Parser
-  { match :: String -> ParserOutput
-  , after :: String -> a
+data ParserOutput = ParserOutput
+  { rest :: String
+  , post :: Tree String
   }
 
-parser :: Parser String
-parser = Parser
-  { match = const$ Left ""
-  , after = id
-  }
+-- Input -> either <Error> <Output>
+type RawParserOutput = Either String (ParserOutput)
+type Parser = String -> RawParserOutput
+
+parser :: Parser
+parser = const Left "Couldn't match"
+
+-- Applies a parser over a ParserOutput, Concatenating the results
+concatApply :: Parser -> ParserOutput -> RawParserOutput
+concatApply f ParserOutput{post = first, ..} = f rest
+  >>= \ParserOutput{post = second, ..}
+  ->  Right ParserOutput
+      { rest = rest
+      , post = Node { value = "+", children = [ first, second ] }
+      }
 
 -- Require both to match in a sequence
-(+) :: Parser a -> Parser a -> Parser [a]
-f + g = Parser
-  { match = \ txt
-      ->  match f txt
-      >>= match g
-  , after = \ txt -> [after f txt, after g txt]
-  }
+(+) :: Parser -> Parser -> Parser
+(+) f g x = f x >>= concatApply g
 
 -- Require only the first one to match
-(-) :: Parser a -> Parser a -> Parser a
-f - g = Parser
-  { match = \ txt
-      -> match g txt
-      |> \case
-        Left _  -> match f txt
-        Right _ -> Right "Negative Condition hit."
-  , after = after f
-  }
+(-) :: Parser -> Parser -> Parser
+(-) f g x = g x
+  |> \case
+    Left _  -> f x
+    Right _ -> Left "Negative condition hit."
+
+-- Requires either one to match, left priority
+(^) :: Parser -> Parser -> Parser
+(^) f g x = f x
+  |> \case
+    Left _ -> g x
+    valid  -> valid
