@@ -21,6 +21,7 @@ description:         Please see the README on GitHub at <https://github.com/HiiG
 
 dependencies:
 - base >= 4.7 && < 5
+- HUnit
 
 library:
   source-dirs: src
@@ -46,3 +47,4 @@ tests:
     - -with-rtsopts=-N
     dependencies:
     - parsing-lib
+    - HUnit
