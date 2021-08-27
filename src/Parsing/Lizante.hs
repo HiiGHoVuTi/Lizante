@@ -61,7 +61,7 @@ concatApply f ParserOutput{post = first, ..} = f rest
 -- Utility function for repeated applies
 loopApply :: Parser -> RawParserOutput -> RawParserOutput
 loopApply f input@(Right v)
-  | isRight output = output
+  | isRight output = loopApply f output
   | otherwise      = input
   where
     output = f `concatApply` v
