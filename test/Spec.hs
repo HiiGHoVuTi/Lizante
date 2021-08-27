@@ -23,6 +23,8 @@ groupConcat  = TestCase . assertBool "group parses the whole sequence" . isRight
                                                                                     , wordWith "dae"
                                                                                     , wordWith "beo"]) "ababa dade bebo"
 suppChildren = TestCase . assertEqual "Suppress doesn't actually delete children" 0 . getLength $ suppress (zeroOrMore word) "hello my name is Maxime"
+literally    = TestCase . assertBool "literal doesn't match what it is supposed to" . isRight $ (literal "Maxime") "Maxime is awesome"
+litchally    = TestCase . assertBool "literal doesn't match similar strings" . isLeft $ (literal "Maxime") "Moxime is really awful"
 
 
 main = runTestTT $ TestList
@@ -37,4 +39,6 @@ main = runTestTT $ TestList
   , TestLabel "words only tolerate restricted letters" wordsNotWith
   , TestLabel "group does apply the whole sequence" groupConcat
   , TestLabel "suppress does delete the children" suppChildren
+  , TestLabel "literal works as expected" literally
+  , TestLabel "literal works as expected" litchally
   ]

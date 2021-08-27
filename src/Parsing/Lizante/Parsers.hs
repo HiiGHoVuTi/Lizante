@@ -1,6 +1,7 @@
 
 module Parsing.Lizante.Parsers (
-  word, wordWith
+  word, wordWith,
+  literal
                ) where
 
 import Data.List
@@ -25,3 +26,11 @@ wordWith vocab = parse' . words
     parse' (x:xs)
       | all (flip elem vocab) x = makeWordOutput x xs
       | otherwise = Left "invalid character in word."
+
+literal :: String -> Parser
+literal word txt
+  | start == word = Right $ ParserOutput end Leaf { value = start }
+  | otherwise     = Left "Didn't match literal word."
+  where
+    start = take (length word) txt
+    end   = drop (length word) txt
