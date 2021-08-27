@@ -5,7 +5,8 @@ module Parsing.Lizante (
   RawParserOutput, ParserOutput(..),
   Parser, no,
   (+), (-), (^),
-  zeroOrMore, oneOrMore
+  zeroOrMore, oneOrMore,
+  group, suppress
                        ) where
 
 import Prelude hiding ((+), (-), (^))
@@ -74,3 +75,16 @@ zeroOrMore f x = loopApply f $ Right (initialResult x)
 -- Matches as long as possible, concatenares the result, only accepts one match and more
 oneOrMore :: Parser -> Parser
 oneOrMore f x = loopApply f $ f x
+
+-- Matches a whole sequence, grouping results
+group :: String -> [Parser] -> Parser
+group name parsers x = foldl process base parsers
+  where
+    base                   = Right $ ParserOutput x Leaf { value = name }
+    process current parser = concatApply parser =<< current
+
+-- Matches as usual, but removes the post-processing
+suppress :: Parser -> Parser
+suppress f x = ignorePost <$> f x
+  where
+    ignorePost ParserOutput{..} = ParserOutput {post = treeList, ..}

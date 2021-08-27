@@ -23,13 +23,14 @@ data Tree a
     { value    :: a
     }
   | TreeList [Tree a]
+  deriving (Show)
 
 treeList :: Tree a
 treeList = TreeList []
 
 (>+) :: Tree a -> Tree a -> Tree a
 (>+) Node{..} (TreeList xs) = Node
-  { children = xs ++ children
+  { children = children ++ xs
   , ..
   }
 (>+) Leaf{..} (TreeList xs) = Node
@@ -38,11 +39,11 @@ treeList = TreeList []
   }
 (>+) (TreeList xs) (TreeList zs) = TreeList $ xs ++ zs
 (>+) Node{..} x = Node
-  { children = x : children
+  { children = children ++ [x]
   , ..
   }
 (>+) Leaf{..} x = Node
   { children = return x
   , ..
   }
-(>+) (TreeList xs) x = TreeList $ x : xs
+(>+) (TreeList xs) x = TreeList $ xs ++ [x]
