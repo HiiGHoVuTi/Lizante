@@ -2,8 +2,8 @@
 {-# LANGUAGE RecordWildCards #-}
 
 module Parsing.Lizante.Utils (
-  Tree(..),
-  (|>)
+  Tree(..), treeList,
+  (|>), (>+)
              ) where
 
 -- OPs
@@ -22,8 +22,21 @@ data Tree a
   | Leaf
     { value    :: a
     }
+  | TreeList [Tree a]
+
+treeList :: Tree a
+treeList = TreeList []
 
 (>+) :: Tree a -> Tree a -> Tree a
+(>+) Node{..} (TreeList xs) = Node
+  { children = xs ++ children
+  , ..
+  }
+(>+) Leaf{..} (TreeList xs) = Node
+  { children = xs
+  , ..
+  }
+(>+) (TreeList xs) (TreeList zs) = TreeList $ xs ++ zs
 (>+) Node{..} x = Node
   { children = x : children
   , ..
@@ -32,3 +45,4 @@ data Tree a
   { children = return x
   , ..
   }
+(>+) (TreeList xs) x = TreeList $ x : xs
