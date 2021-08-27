@@ -3,7 +3,7 @@
 
 module Parsing.Lizante (
   RawParserOutput, ParserOutput(..),
-  Parser, parser,
+  Parser, no,
   (+), (-), (^),
   zeroOrMore, oneOrMore
                        ) where
@@ -22,8 +22,8 @@ data ParserOutput = ParserOutput
 type RawParserOutput = Either String (ParserOutput)
 type Parser = String -> RawParserOutput
 
-parser :: Parser
-parser = const Left "Couldn't match"
+no :: Parser
+no = const Left "Couldn't match"
 
 -- Setup a node for concatted results
 initialResult :: String -> ParserOutput
