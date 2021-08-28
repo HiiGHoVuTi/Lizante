@@ -6,7 +6,8 @@ module Parsing.Lizante (
   Parser, no,
   (+), (-), (^),
   zeroOrMore, oneOrMore,
-  group, suppress
+  group, suppress,
+  ignore, optional
                        ) where
 
 import Prelude hiding ((+), (-), (^))
@@ -39,6 +40,7 @@ concatApply f ParserOutput{post = first, ..} = f rest
       , post = first >+ second
       }
 
+
 -- Require both to match in a sequence
 (+) :: Parser -> Parser -> Parser
 (+) f g x = initialResult x
@@ -58,6 +60,7 @@ concatApply f ParserOutput{post = first, ..} = f rest
   |> \case
     Left _ -> g x
     valid  -> valid
+
 
 -- Utility function for repeated applies
 loopApply :: Parser -> RawParserOutput -> RawParserOutput
@@ -88,3 +91,14 @@ suppress :: Parser -> Parser
 suppress f x = ignorePost <$> f x
   where
     ignorePost ParserOutput{..} = ParserOutput {post = treeList, ..}
+
+-- Optional can match, or not, without throwing a Left parse error
+optional :: Parser -> Parser
+optional f x = saveFromLeft $ f x
+  where
+    saveFromLeft (Left _) = Right $ initialResult x
+    saveFromLeft valid    = valid
+
+-- Ignores patters f when parsing g, example "  1 +   1" would parse like "1+1" when ignoring whitespaces
+ignore :: Parser -> Parser -> Parser
+ignore f g = suppress (optional f) + g + suppress (optional f)
